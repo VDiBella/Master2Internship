@@ -200,7 +200,7 @@ class HfHelper
   template <typename T>
   auto invMassDplusToPiKPi(const T& candidate)
   {
-    return candidate.m(std::array{o2::constants::physics::MassPiPlus, o2::constants::physics::MassKPlus, o2::constants::physics::MassPiPlus});
+    return 1.f; // dummy value -- TO BE MODIFIED so that it returns the invariant mass of the candidate
   }
 
   template <typename T>
