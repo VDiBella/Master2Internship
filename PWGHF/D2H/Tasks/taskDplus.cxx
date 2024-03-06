@@ -57,7 +57,7 @@ struct HfTaskDplus {
   void init(InitContext&)
   {
     auto vbins = (std::vector<double>)binsPt;
-    registry.add("Minv", "test", {HistType::kTH2F, {{100, 1.7, 2.1}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
+    registry.add("Minv", "test", {HistType::kTH2F, {{100, 1.7, 2.1}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}}); //Test Valerio
     registry.add("hEta", "3-prong candidates;candidate #it{#eta};entries", {HistType::kTH2F, {{100, -2., 2.}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
     registry.add("hCt", "3-prong candidates;proper lifetime (D^{#pm}) * #it{c} (cm);entries", {HistType::kTH2F, {{120, -20., 100.}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
     registry.add("hDecayLength", "3-prong candidates;decay length (cm);entries", {HistType::kTH2F, {{200, 0., 2.}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});

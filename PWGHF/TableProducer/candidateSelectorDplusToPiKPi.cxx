@@ -146,9 +146,9 @@ struct HfCandidateSelectorDplusToPiKPi {
     if (trackPion1.pt() < cuts->get(pTBin, "pT Pi") || trackKaon.pt() < cuts->get(pTBin, "pT K") || trackPion2.pt() < cuts->get(pTBin, "pT Pi")) {
       return false;
     }
-    /*if (std::abs(hfHelper.invMassDplusToPiKPi(candidate) - o2::constants::physics::MassDPlus) > cuts->get(pTBin, "deltaM")) {
+    if (std::abs(hfHelper.invMassDplusToPiKPi(candidate) - o2::constants::physics::MassDPlus) > cuts->get(pTBin, "deltaM")) {
       return false;
-    }*/
+    }
     if (candidate.decayLength() < cuts->get(pTBin, "decay length")) {
       return false;
     }
