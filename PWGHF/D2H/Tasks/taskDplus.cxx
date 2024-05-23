@@ -39,8 +39,10 @@ struct HfTaskDplus {
 
   HfHelper hfHelper;
 
-  Partition<soa::Join<aod::HfCand3Prong, aod::HfSelDplusToPiKPi>> selectedDPlusCandidates = aod::hf_sel_candidate_dplus::isSelDplusToPiKPi >= selectionFlagDplus;
+  Partition<soa::Join<aod::HfCand3Prong, aod::HfSelDplusToPiKPi, aod::HfCand3ProngMcRec>> selectedDPlusCandidates = aod::hf_sel_candidate_dplus::isSelDplusToPiKPi >= selectionFlagDplus;
   Partition<soa::Join<aod::HfCand3Prong, aod::HfSelDplusToPiKPi, aod::HfCand3ProngMcRec>> recoFlagDPlusCandidates = aod::hf_sel_candidate_dplus::isSelDplusToPiKPi > 0;
+  //Partition<soa::Join<aod::HfCand3Prong, aod::HfSelDplusToPiKPi>> selectedDPlusCandidates = aod::hf_sel_candidate_dplus::isSelDplusToPiKPi >= selectionFlagDplus;
+  //Partition<soa::Join<aod::HfCand3Prong, aod::HfSelDplusToPiKPi, aod::HfCand3ProngMcRec>> recoFlagDPlusCandidates = aod::hf_sel_candidate_dplus::isSelDplusToPiKPi > 0;
 
   HistogramRegistry registry{
     "registry",
@@ -57,7 +59,7 @@ struct HfTaskDplus {
   void init(InitContext&)
   {
     auto vbins = (std::vector<double>)binsPt;
-    registry.add("Minv", "test", {HistType::kTH2F, {{100, 1.7, 2.1}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}}); //Test Valerio
+    registry.add("hMinv", "3-prong candidates;candidate invariant mass M_{inv};entries", {HistType::kTH2F, {{200, 1.7, 2.1}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}}); //Test Valerio
     registry.add("hEta", "3-prong candidates;candidate #it{#eta};entries", {HistType::kTH2F, {{100, -2., 2.}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
     registry.add("hCt", "3-prong candidates;proper lifetime (D^{#pm}) * #it{c} (cm);entries", {HistType::kTH2F, {{120, -20., 100.}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
     registry.add("hDecayLength", "3-prong candidates;decay length (cm);entries", {HistType::kTH2F, {{200, 0., 2.}, {vbins, "#it{p}_{T} (GeV/#it{c})"}}});
@@ -93,7 +95,9 @@ struct HfTaskDplus {
     registry.add("hPtVsYRecSigNonPrompt_RecoSkim", "3-prong candidates (RecoSkim - matched, non-prompt);#it{p}_{T}^{rec.}; #it{y}", {HistType::kTH2F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}, {100, -5., 5.}}});
     registry.add("hPtVsYGen", "MC particles (matched);#it{p}_{T}^{gen.}; #it{y}", {HistType::kTH2F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}, {100, -5., 5.}}});
     registry.add("hPtVsYGenPrompt", "MC particles (matched, prompt);#it{p}_{T}^{gen.}; #it{y}", {HistType::kTH2F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}, {100, -5., 5.}}});
-    registry.add("hPtVsYGenNonPrompt", "MC particles (matched, non-prompt);#it{p}_{T}^{gen.}; #it{y}", {HistType::kTH2F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}, {100, -5., 5.}}});
+    registry.add("hPtVsYGenNonPrompt", "MC particles (matched, non-prompt);#it{p}_{T}^{gen.}; #it{mass}", {HistType::kTH2F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}, {100, 1.3, 50}}});
+    registry.add("hPtVsMassGenNonPrompt", "MC particles (matched, non-prompt);#it{p}_{T}^{gen.}; #it{mass}", {HistType::kTH2F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}, {200, 1.7, 2.1}}});
+    registry.add("hPtVsMassRecSigNonPrompt", "3-prong candidates (RecoPID - matched);#it{p}_{T}^{rec.}; #it{mass}", {HistType::kTH2F, {{vbins, "#it{p}_{T} (GeV/#it{c})"}, {200, 1.7, 2.1}}});
   }
 
   void process(soa::Join<aod::HfCand3Prong, aod::HfSelDplusToPiKPi> const& candidates)
@@ -106,7 +110,7 @@ struct HfTaskDplus {
       if (yCandRecoMax >= 0. && std::abs(hfHelper.yDplus(candidate)) > yCandRecoMax) {
         continue;
       }
-      registry.fill(HIST("Minv"), hfHelper.invMassDplusToPiKPi(candidate), candidate.pt()); //Test Valerio
+      registry.fill(HIST("hMinv"), hfHelper.invMassDplusToPiKPi(candidate), candidate.pt()); //Test Valerio
       registry.fill(HIST("hPt"), candidate.pt());
       registry.fill(HIST("hEta"), candidate.eta(), candidate.pt());
       registry.fill(HIST("hCt"), hfHelper.ctDplus(candidate), candidate.pt());
@@ -137,7 +141,7 @@ struct HfTaskDplus {
                  aod::TracksWMc const& tracks)
   {
     // MC rec.
-    for (const auto& candidate : recoFlagDPlusCandidates) {
+    for (const auto& candidate : selectedDPlusCandidates) {
       // not possible in Filter since expressions do not support binary operators
       if (!(candidate.hfflag() & 1 << aod::hf_cand_3prong::DecayType::DplusToPiKPi)) {
         continue;
@@ -152,6 +156,7 @@ struct HfTaskDplus {
         registry.fill(HIST("hPtGenSig"), particleMother.pt()); // gen. level pT
         auto ptRec = candidate.pt();
         auto yRec = hfHelper.yDplus(candidate);
+        //auto massRec = hfHelper.invMassDplusToPiKPi(candidate);
         registry.fill(HIST("hPtVsYRecSig_RecoSkim"), ptRec, yRec);
         if (TESTBIT(candidate.isSelDplusToPiKPi(), aod::SelectionStep::RecoTopol)) {
           registry.fill(HIST("hPtVsYRecSigRecoTopol"), ptRec, yRec);
@@ -174,6 +179,9 @@ struct HfTaskDplus {
             registry.fill(HIST("hPtRecSigPrompt"), ptRec); // rec. level pT, prompt
           }
         } else {
+          //if (abs(yRec) <= yCandRecoMax) {
+            //registry.fill(HIST("hPtVsMassRecNonPrompt"), ptRec, hfHelper.invMassDplusToPiKPi(candidate));
+          //}
           registry.fill(HIST("hPtVsYRecSigNonPrompt_RecoSkim"), ptRec, yRec);
           if (TESTBIT(candidate.isSelDplusToPiKPi(), aod::SelectionStep::RecoTopol)) {
             registry.fill(HIST("hPtVsYRecSigNonPromptRecoTopol"), ptRec, yRec);
@@ -183,6 +191,7 @@ struct HfTaskDplus {
           }
           if (candidate.isSelDplusToPiKPi() >= selectionFlagDplus) {
             registry.fill(HIST("hPtRecSigNonPrompt"), ptRec); // rec. level pT, non-prompt
+            registry.fill(HIST("hPtVsMassRecSigNonPrompt"), ptRec, hfHelper.invMassDplusToPiKPi(candidate));
           }
         }
         registry.fill(HIST("hCPARecSig"), candidate.cpa());
@@ -198,6 +207,7 @@ struct HfTaskDplus {
       if (std::abs(particle.flagMcMatchGen()) == 1 << aod::hf_cand_3prong::DecayType::DplusToPiKPi) {
         auto ptGen = particle.pt();
         auto yGen = RecoDecay::y(std::array{particle.px(), particle.py(), particle.pz()}, o2::constants::physics::MassDPlus);
+        auto mass = RecoDecay::m(ptGen, particle.e());
         if (yCandGenMax >= 0. && std::abs(yGen) > yCandGenMax) {
           continue;
         }
@@ -209,6 +219,9 @@ struct HfTaskDplus {
         } else {
           registry.fill(HIST("hPtGenNonPrompt"), ptGen);
           registry.fill(HIST("hPtVsYGenNonPrompt"), ptGen, yGen);
+          if (abs(yGen) <= 0.9) {
+            registry.fill(HIST("hPtVsMassGenNonPrompt"), ptGen, mass);
+          }
         }
         registry.fill(HIST("hEtaGen"), particle.eta());
       }
